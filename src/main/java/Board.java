@@ -57,15 +57,46 @@ public class Board {
         return (hamming() == 0);
     }
 
-    //TODO  a board that is obtained by exchanging two adjacent blocks in the same row
+    // a board that is obtained by exchanging two adjacent blocks in the same row
     public Board twin() {
-        return null;
+        int[][] clone = new int[N][N];
+        int j = 0;
+        int x = 0;
+        for (int i = 1; i < N * N; i++) {
+            if ((i % N) > 0) {
+                j = i / N;
+                x = i % N - 1;
+            } else {
+                j = i / N - 1;
+                x = N - 1;
+            }
+            clone[j][x] = tiles[i];
+        }
+
+        if (clone[0][0] == 0 || clone[0][1] == 0) {
+            int buf = clone[1][1];
+            clone[1][1] = clone[1][0];
+            clone[1][0] = buf;
+        }
+        else {
+            int buf = clone[0][1];
+            clone[0][1] = clone[0][0];
+            clone[0][0] = buf;
+        }
+
+        return new Board(clone);
     }
 
     // does this board equal y?
     public boolean equals(Object y) {
-        Board that = (Board) y;
+        if (y == this)
+            return true;
+        if (y == null)
+            return false;
+        if (y.getClass() != this.getClass())
+            return false;
 
+        Board that = (Board) y;
         return this.toString().equals(that.toString());
     }
 

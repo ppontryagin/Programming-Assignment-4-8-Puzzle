@@ -12,12 +12,23 @@ public class BoardTest {
 
     Board board;
     Board boardRev;
-
+    Board boardTwin;
 
     @Before
     public void setUp() {
         board = new Board(makeTiles(3));
         boardRev = new Board(makeTilesReverse(3));
+
+        int[][] twin = makeTiles(3);
+        twin[0][0] = 2;
+        twin[0][1] = 1;
+
+        boardTwin = new Board(twin);
+    }
+
+    @Test
+    public void twinIsCorrect() {
+        assertThat(board.twin().equals(boardTwin), is(true));
     }
 
     @Test
