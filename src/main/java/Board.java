@@ -49,24 +49,24 @@ public class Board {
                 n += targ.compare(curr);
             }
         }
-
         return n;
     }
 
-    //TODO  is this board the goal board?
-
+    // is this board the goal board?
     public boolean isGoal() {
-        return false;
+        return (hamming() == 0);
     }
 
-    //TODO  a boadr that is obtained by exchanging two adjacent blocks in the same row
+    //TODO  a board that is obtained by exchanging two adjacent blocks in the same row
     public Board twin() {
         return null;
     }
 
-    //TODO  does this board equal y?
+    // does this board equal y?
     public boolean equals(Object y) {
-        return false;
+        Board that = (Board) y;
+
+        return this.toString().equals(that.toString());
     }
 
     //TODO  all neighboring boards
@@ -89,7 +89,6 @@ public class Board {
 
     // unit tests (not graded)
     public static void main(String[] args) {
-
     }
 
     private class Point2D {

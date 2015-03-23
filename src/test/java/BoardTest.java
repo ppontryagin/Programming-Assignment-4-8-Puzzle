@@ -32,6 +32,22 @@ public class BoardTest {
         assertThat(boardRev.manhattan(), is(16));
     }
 
+    @Test
+    public void boardIsGoal() {
+        assertThat(board.isGoal(), is(true));
+    }
+
+    @Test
+    public void twoEqualBoardAreEqual() {
+        Board boardEqual = new Board(makeTiles(3));
+        assertThat(board.equals(boardEqual), is(true));
+    }
+
+    @Test
+    public void twoUnequalBoardAreUnequal() {
+        assertThat(board.equals(boardRev), is(false));
+    }
+
     @Ignore
     public void soutIsCorrect() {
         StdOut.println(board);
