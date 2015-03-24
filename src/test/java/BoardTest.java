@@ -26,6 +26,23 @@ public class BoardTest {
         boardTwin = new Board(twin);
     }
 
+    @Ignore
+    public void neighboursAreCorrect() {
+
+        int[][] twin = makeTiles(3);
+
+        twin[2][1] = 0;
+        twin[2][2] = 8;
+
+        board = new Board(twin);
+
+        System.out.println(board.toString());
+
+        for (Board b: board.neighbors()) {
+            System.out.println(b.toString());
+        }
+    }
+
     @Test
     public void twinIsCorrect() {
         assertThat(board.twin().equals(boardTwin), is(true));

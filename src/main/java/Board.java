@@ -1,21 +1,23 @@
-/**
- * Created by Pavel.Pontryagin on 21.03.2015.
- */
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
 public class Board {
 
-    private int[] tiles;
+    private int[][] tiles;
     private int N;
+    private Point2D emptyTile;
 
     // construct a board from an N-by-N array of blocks
     // (where blocks[i][j] = block in row i, column j)
     public Board(int[][] blocks) {
         this.N = blocks.length;
-        tiles = new int[N * N + 1];
-        int n = 1;
+        tiles = new int[N][N];
         for (int i = 0; i < N; i++)
             for (int j = 0; j < N; j++) {
-                tiles[n] = blocks[i][j];
-                n++;
+                tiles[i][j] = blocks[i][j];
+                if (tiles[i][j] == 0)
+                    emptyTile = new Point2D(i, j);
             }
     }
 
@@ -28,27 +30,35 @@ public class Board {
     public int hamming() {
         int n = 0;
 
-        for (int i = 1; i <= N * N; i++) {
-            if (tiles[i] != i && tiles[i] != 0) {
-                n++;
+        for (int i = 0; i < N; i++)
+            for (int j = 0; j < N; j++) {
+                if ((i != toI(tiles[i][j]) || j != toJ(tiles[i][j])) && tiles[i][j] != 0) {
+                    n++;
+                }
             }
-        }
         return n;
+    }
+
+    private int toI(int i) {
+        return (i - 1) / N;
+    }
+
+    private int toJ(int i) {
+        return (i - 1) % N;
     }
 
     // sum of Manhattan distances between blocks and goal
     public int manhattan() {
         int n = 0;
-        Point2D curr;
-        Point2D targ;
 
-        for (int i = 1; i <= N * N; i++) {
-            if (tiles[i] != 0) {
-                curr = new Point2D(i, N);
-                targ = new Point2D(tiles[i], N);
-                n += targ.compare(curr);
+        for (int i = 0; i < N; i++)
+            for (int j = 0; j < N; j++) {
+//                System.out.println("i, j: " + i + ", " + j);
+//                System.out.println("toI(tiles[i][j]): " + toI(tiles[i][j]) + ":" + tiles[i][j]);
+//                System.out.println("toJ(tiles[i][j]): " + toJ(tiles[i][j]) + ":" + tiles[i][j]);
+                if (tiles[i][j] != 0)
+                    n += Math.abs(toJ(tiles[i][j]) - j) + Math.abs(toI(tiles[i][j]) - i);
             }
-        }
         return n;
     }
 
@@ -59,26 +69,14 @@ public class Board {
 
     // a board that is obtained by exchanging two adjacent blocks in the same row
     public Board twin() {
-        int[][] clone = new int[N][N];
-        int j = 0;
-        int x = 0;
-        for (int i = 1; i < N * N; i++) {
-            if ((i % N) > 0) {
-                j = i / N;
-                x = i % N - 1;
-            } else {
-                j = i / N - 1;
-                x = N - 1;
-            }
-            clone[j][x] = tiles[i];
-        }
+        int[][] clone = tiles.clone();
 
+        //swap values
         if (clone[0][0] == 0 || clone[0][1] == 0) {
             int buf = clone[1][1];
             clone[1][1] = clone[1][0];
             clone[1][0] = buf;
-        }
-        else {
+        } else {
             int buf = clone[0][1];
             clone[0][1] = clone[0][0];
             clone[0][0] = buf;
@@ -100,21 +98,40 @@ public class Board {
         return this.toString().equals(that.toString());
     }
 
-    //TODO  all neighboring boards
+    // all neighboring boards
     public Iterable<Board> neighbors() {
-        return null;
+        List<Board> mates = new ArrayList<Board>();
+        int[][] mate;
+
+        for (Point2D point : emptyTile.neighbours()) {
+            mate = new int[N][N];
+
+            for (int i = 0; i < tiles.length; i++) {
+                System.arraycopy(tiles[i], 0, mate[i], 0, tiles[0].length);
+            }
+
+//            buf = mate[emptyTile.x][emptyTile.y];
+//            mate[emptyTile.x][emptyTile.y] = mate[point.x][point.y];
+//            mate[point.x][point.y] = buf;
+
+            mate[emptyTile.x][emptyTile.y] = mate[point.x][point.y];
+            mate[point.x][point.y] = 0;
+
+            mates.add(new Board(mate));
+        }
+        return mates;
     }
 
     // string representation of this board (in the output format specified below)
     public String toString() {
         StringBuilder s = new StringBuilder();
-        s.append(N + "\n");
-        for (int i = 1; i < N * N + 1; i++) {
-            s.append(String.format("%2d ", tiles[i]));
-            if (i % N == 0)
-                s.append("\n");
+        s.append(N).append("\n");
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                s.append(String.format("%2d ", tiles[i][j]));
+            }
+            s.append("\n");
         }
-
         return s.toString();
     }
 
@@ -125,16 +142,28 @@ public class Board {
     private class Point2D {
         public int x;
         public int y;
+        public int p;
 
-        private Point2D(int p, int dim) {
-            if ((p % dim) > 0) {
-                y = p / dim + 1;
-                x = p % dim;
+        private Point2D(int x, int y) {
 
-            } else {
-                y = p / dim;
-                x = dim;
-            }
+            this.p = y * N + x + 1;
+            this.x = x;
+            this.y = y;
+        }
+
+        public Iterable<Point2D> neighbours() {
+            List<Point2D> mates = new LinkedList<Point2D>();
+
+            if (x - 1 >= 0)
+                mates.add(new Point2D(x - 1, y));
+            if (x + 1 < N)
+                mates.add(new Point2D(x + 1, y));
+            if (y - 1 >= 0)
+                mates.add(new Point2D(x, y - 1));
+            if (y + 1 < N)
+                mates.add(new Point2D(x, y + 1));
+
+            return mates;
         }
 
         @Override
@@ -143,14 +172,6 @@ public class Board {
                     "x=" + x +
                     ", y=" + y +
                     '}';
-        }
-
-        public boolean equals(Point2D that) {
-            return compare(that) == 0;
-        }
-
-        public int compare(Point2D that) {
-            return Math.abs(that.x - this.x) + Math.abs(that.y - this.y);
         }
     }
 }
